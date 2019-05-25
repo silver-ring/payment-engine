@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-logstash-statefulset
+  labels:
+    app: voms-logstash-statefulset
+spec:
+  serviceName: "voms-logstash"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-logstash
+  volumeClaimTemplates:
+    - metadata:
+        name: voms-logstash-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi                
+  template:    
+    metadata:
+      name: voms-logstash
+      labels:
+        app: voms-logstash
+    spec:  
+      containers:
+        - image: docker.elastic.co/logstash/logstash-oss:6.6.0
+          name: voms-logstash
+          volumeMounts:
+            - name: logstash-config
+              mountPath: /usr/share/logstash/config/pipelines.yml
+              subPath: pipelines.yml
+            - name: logstash-pipelines
+              mountPath: /voms/pipelines              
+            - name: voms-logstash-data
+              mountPath: /usr/share/logstash/data  
+      volumes:
+        - name: logstash-config
+          configMap:
+            name: logstash-config
+        - name: logstash-pipelines
+          configMap:
+            name: logstash-pipelines
+

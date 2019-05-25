@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-db-management-statefulset
+  labels:
+    app: voms-db-management-statefulset
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd          
+spec:
+  serviceName: "voms-db-management"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-db-management
+  volumeClaimTemplates:
+    - metadata:
+        name: voms-db-management-data
+        labels:
+          customer: kubernetes_topup
+          product: topup
+          owner: mohamed_elbahrawy
+          purpose: rnd              
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi            
+  template:    
+    metadata:
+      name: voms-db-management
+      labels:
+        app: voms-db-management
+        customer: kubernetes_topup
+        product: topup
+        owner: mohamed_elbahrawy
+        purpose: rnd              
+    spec:
+      initContainers:
+        - name: remove-lostfound
+          image: busybox
+          command: ["rm", "-r", "/var/lib/mysql/lost+found"]
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: voms-db-management-data            
+      containers:
+        - name: voms-db-management
+          image: mysql/mysql-cluster
+          volumeMounts:          
+            - mountPath: /var/lib/mysql
+              name: voms-db-management-data
+            - name: mysql-config
+              mountPath: /etc/mysql-cluster.cnf
+              subPath: mysql-cluster.cnf
+          args: ["ndb_mgmd","--ndb-nodeid=1"]
+      volumes:
+        - name: mysql-config
+          configMap:
+            name: mysql-config
+            

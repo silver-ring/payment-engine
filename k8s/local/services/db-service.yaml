@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db 
+spec:
+    selector:
+      app: voms-db
+    ports:
+      - name: port3306
+        port: 3306

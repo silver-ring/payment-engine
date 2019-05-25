@@ -1,0 +1,9 @@
+registry:
+  restart: always
+  image: registry
+  container_name: local-registry
+  ports:
+    - 6000:5000  
+  volumes:
+    - ./data:/var/lib/registry    
+

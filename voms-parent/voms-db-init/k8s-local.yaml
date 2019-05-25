@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: voms-db-init
+  labels:
+    app: voms-db-init
+spec:
+  restartPolicy: Never
+  volumes:
+    - name: voms-apps-data
+      nfs:
+        path: /
+        server: 10.110.111.197
+  containers:
+  - name: voms-db-init
+    image: 127.0.0.1:6000/voms-db-init:edge
+    volumeMounts:
+      - mountPath: /voms/data
+        name: voms-apps-data
+

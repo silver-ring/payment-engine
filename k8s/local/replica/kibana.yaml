@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-kibana-statefulset
+  labels:
+    app: voms-kibana-statefulset
+spec:
+  serviceName: "voms-kibana"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-kibana
+  template:    
+    metadata:
+      name: voms-kibana
+      labels:
+        app: voms-kibana
+    spec:  
+      containers:
+        - image: docker.elastic.co/kibana/kibana-oss:6.6.0
+          name: voms-kibana
+          env:
+            - name: "elasticsearch.hosts"
+              value: "http://localhost:31501/"

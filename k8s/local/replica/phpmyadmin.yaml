@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-phpmyadmin-statefulset
+  labels:
+    app: voms-phpmyadmin-statefulset
+spec:
+  serviceName: "voms-phpmyadmin"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-phpmyadmin
+  template:    
+    metadata:
+      name: voms-phpmyadmin
+      labels:
+        app: voms-phpmyadmin
+    spec:
+      containers:
+      - name: voms-phpmyadmin
+        image: phpmyadmin/phpmyadmin
+        env:
+            - name: "PMA_ARBITRARY"
+              value: "1"

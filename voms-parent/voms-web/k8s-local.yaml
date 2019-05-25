@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-web-deployment
+  labels:
+    app: voms-web-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-web
+  template:  
+    metadata:
+      name: voms-web
+      labels:
+        app: voms-web
+    spec:
+      containers:
+      - name: voms-web
+        image: 127.0.0.1:6000/voms-web:edge
+        volumeMounts:
+            - name: nginx-web
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+        command: [nginx, '-g', 'daemon off;']
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 3
+      volumes:
+        - name: nginx-web
+          configMap:
+            name: nginx-web

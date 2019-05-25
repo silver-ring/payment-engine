@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-soap-deployment
+  labels:
+    app: voms-soap-deployment
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-soap
+  template:
+    metadata:
+      name: voms-soap
+      labels:
+        app: voms-soap
+        customer: kubernetes_topup
+        product: topup
+        owner: mohamed_elbahrawy
+        purpose: rnd
+    spec:
+      volumes:
+        - name: voms-apps-data
+          nfs:
+            path: /
+            server: 10.59.243.125
+      containers:
+        - name: voms-soap
+          image: eu.gcr.io/product-topup/topup-cloud-voms-soap:edge
+          env:
+            - name: "SPRING_PROFILES_ACTIVE"
+              value: "staging,common,common-staging"
+          volumeMounts:
+            - mountPath: /voms/data
+              name: voms-apps-data    
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 180
+            periodSeconds: 3
+

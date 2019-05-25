@@ -1,0 +1,17 @@
+import React from "react";
+import NewListOrderForm from "../../../fragment/NewListOrderForm";
+
+class NewActiveVoucherBlockingListOrder extends React.Component {
+
+  render = () => {
+
+    return (
+        <NewListOrderForm>
+
+        </NewListOrderForm>
+    )
+
+  }
+}
+
+export default NewActiveVoucherBlockingListOrder;

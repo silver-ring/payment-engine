@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-file-server-statefulset
+  labels:
+    app: voms-file-server-statefulset
+spec:
+  serviceName: "voms-file-server"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-file-server
+#  volumeClaimTemplates:
+#    - metadata:
+#        name: voms-file-server-data
+#      spec:
+#        accessModes:
+#          - ReadWriteOnce
+#        resources:
+#          requests:
+#            storage: 10Gi                      
+  template:    
+    metadata:
+      name: voms-file-server      
+      labels:
+        app: voms-file-server
+    spec:
+      containers:
+      - name: voms-file-server
+        image: gcr.io/google_containers/volume-nfs:0.8            
+        securityContext:        
+          privileged: true
+#        volumeMounts:
+#          - mountPath: /exports
+#            name: voms-file-server-data      

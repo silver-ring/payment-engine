@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-web-deployment
+  labels:
+    app: voms-web-deployment
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-web
+  template:  
+    metadata:
+      name: voms-web
+      labels:
+        app: voms-web
+        customer: kubernetes_topup
+        product: topup
+        owner: mohamed_elbahrawy
+        purpose: rnd
+    spec:
+      containers:
+      - name: voms-web
+        image: eu.gcr.io/product-topup/topup-cloud-voms-web:edge
+        volumeMounts:
+            - name: nginx-web
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+        command: [nginx, '-g', 'daemon off;']
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 3
+      volumes:
+        - name: nginx-web
+          configMap:
+            name: nginx-web
+

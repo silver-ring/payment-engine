@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: voms-db-init
+  labels:
+    app: voms-db-init
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd
+spec:
+  restartPolicy: Never
+  volumes:
+    - name: voms-apps-data
+      nfs:
+        path: /
+        server: 10.59.243.125
+  containers:
+    - name: voms-db-init
+      image: eu.gcr.io/product-topup/topup-cloud-voms-db-init:edge
+      env:
+        - name: "SPRING_PROFILES_ACTIVE"
+          value: "staging,common,common-staging"
+      volumeMounts:
+        - mountPath: /voms/data
+          name: voms-apps-data
+

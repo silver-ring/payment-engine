@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-soap-deployment
+  labels:
+    app: voms-soap-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-soap
+  template:
+    metadata:
+      name: voms-soap
+      labels:
+        app: voms-soap
+    spec:
+      volumes:
+        - name: voms-apps-data
+          nfs:
+            path: /
+            server: 10.110.111.197
+      containers:
+        - name: voms-soap
+          image: 127.0.0.1:6000/voms-soap:edge
+          volumeMounts:
+            - mountPath: /voms/data
+              name: voms-apps-data    
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 180
+            periodSeconds: 3
+

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema elementFormDefault="qualified" version="1.0" targetNamespace="http://optiva.com/topup/voms" xmlns:tns="http://optiva.com/topup/voms" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="rechargeConfirmationRequest" type="tns:rechargeConfirmationRequest"/>
+
+  <xs:element name="rechargeConfirmationResponse" type="tns:rechargeConfirmationResponse"/>
+
+  <xs:element name="rechargeRequest" type="tns:rechargeRequest"/>
+
+  <xs:element name="rechargeResponse" type="tns:rechargeResponse"/>
+
+  <xs:complexType name="elementsConfigParametersHelper" final="extension restriction">
+    <xs:sequence/>
+  </xs:complexType>
+
+  <xs:complexType name="rechargeConfirmationRequest">
+    <xs:sequence>
+      <xs:element name="msisdn" type="xs:string"/>
+      <xs:element name="voucherId" type="xs:long"/>
+      <xs:element name="transactionId" type="xs:string"/>
+      <xs:element name="errorCode" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="rechargeConfirmationResponse">
+    <xs:sequence>
+      <xs:element name="errorCode" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="rechargeRequest">
+    <xs:sequence>
+      <xs:element name="msisdn" type="xs:string"/>
+      <xs:element name="voucherId" type="xs:long"/>
+      <xs:element name="transactionId" type="xs:string"/>
+      <xs:element name="msisdnProviderId" type="xs:int"/>
+      <xs:element name="ccId" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="rechargeResponse">
+    <xs:sequence>
+      <xs:element name="amount" type="xs:double"/>
+      <xs:element name="currency" type="xs:string" minOccurs="0"/>
+      <xs:element name="providerIdVoucher" type="xs:int"/>
+      <xs:element name="balanceExtension" type="xs:int"/>
+      <xs:element name="serialNo" type="xs:long"/>
+      <xs:element name="voucherType" type="xs:int"/>
+      <xs:element name="errorCode" type="xs:int"/>
+      <xs:element name="voucherExpiryDate" type="xs:int"/>
+      <xs:element name="accountId" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+

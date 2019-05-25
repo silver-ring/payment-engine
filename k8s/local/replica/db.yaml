@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-db-statefulset
+  labels:
+    app: voms-db-statefulset
+spec:
+  serviceName: "voms-db"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-db
+  volumeClaimTemplates:
+    - metadata:
+        name: voms-db-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi                
+  template:    
+    metadata:
+      name: voms-db
+      labels:
+        app: voms-db
+    spec:
+      containers:
+        - name: voms-db
+          image: mysql       
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: voms-db-data      
+          args: ["--default-authentication-plugin=mysql_native_password"]
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: root      
+            - name: MYSQL_ROOT_HOST
+              value: "%"

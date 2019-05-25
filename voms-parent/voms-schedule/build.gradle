@@ -1,0 +1,89 @@
+apply plugin: 'com.palantir.docker'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+dependencies {
+    implementation project(":voms-common")
+
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
+    implementation "org.springframework.cloud:spring-cloud-starter-stream-kafka"
+    implementation "org.springframework.boot:spring-boot-starter-data-elasticsearch"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+
+    testImplementation project(":voms-test-common")
+
+    testImplementation "org.springframework.kafka:spring-kafka-test"
+
+    testImplementation "com.h2database:h2"
+}
+
+// to build the dev profile run  "gradle -penv=staging -ptag=v1 docker"
+// to build the project and push the image use "gradle -penv=staging -ptag=v1 dockerPush"
+// check the documentation for more information "https://github.com/palantir/gradle-docker" 
+docker {
+    dockerfile file("Dockerfile")
+    copySpec.from("${buildDir}/dependency").into("dependency")
+    if (project.hasProperty('env') && project.hasProperty('tag') && project.env == 'prod') {
+        String tagName = "${project.tag}"
+        tags "latest", "${tagName}"
+        name "eu.gcr.io/product-topup/topup-cloud-voms-schedule:${tagName}"
+    } else if (project.hasProperty('env') && project.env == 'staging') {
+        String tagName = "edge-${version}"
+        tags "edge", "${tagName}"
+        name "eu.gcr.io/product-topup/topup-cloud-voms-schedule:${tagName}"
+    } else if (project.hasProperty('env') && project.env == 'dev') {
+        String tagName = "${version}"
+        tags "${tagName}"
+        name "eu.gcr.io/product-topup/topup-cloud-voms-schedule:${tagName}"
+    } else {
+        String tagName = "${System.currentTimeMillis()}"
+        tags "edge", "${tagName}"
+        name "127.0.0.1:6000/voms-schedule:${tagName}"
+    }
+}
+
+// to deploy the app in k8s you should run  "gradle deployk8s" 
+// then you should update the image with "gradle updateK8sImage"
+// if you want to undeploy the app use "gradle undeployK8s"
+// to deploy in develop you should use "-penv=staging -ptag=v1" flage 
+
+def K8S_GROUP = 'k8s'
+
+task deployK8s(type: Exec) {
+    group = K8S_GROUP
+    if (project.hasProperty('env') && project.env == 'staging') {
+        commandLine "Kubectl", "apply", "-f", "k8s-staging.yaml"
+    } else {
+        commandLine "Kubectl", "apply", "-f", "k8s-local.yaml"
+    }
+}
+
+task undeployK8s(type: Exec) {
+    group = K8S_GROUP
+    if (project.hasProperty('env') && project.env == 'staging') {
+        commandLine "Kubectl", "delete", "-f", "k8s-staging.yaml"
+    } else {
+        commandLine "Kubectl", "delete", "-f", "k8s-local.yaml"
+    }
+}
+
+task updateK8sImage(type: Exec) {
+    group = K8S_GROUP
+    dependsOn dockerTagsPush
+    String imageName = docker.name
+    try {
+        commandLine "kubectl", "set", "image", "deployment/voms-schedule-deployment", "voms-schedule=${imageName}"
+    } catch (Exception ex) {
+        println("unable to deploy voms-schedule")
+        ex.printStackTrace()
+    }
+}
+
+task bootJar.doLast {
+    tasks.unpack.execute()
+}
+
+task unpack(type: Copy) {
+    from(zipTree(tasks.bootJar.outputs.files.singleFile))
+    into("${buildDir}/dependency")
+}

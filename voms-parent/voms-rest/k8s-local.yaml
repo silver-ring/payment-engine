@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-rest-deployment
+  labels:
+    app: voms-rest-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-rest
+  template:
+    metadata:
+      name: voms-rest
+      labels:
+        app: voms-rest
+    spec:
+      volumes:
+        - name: voms-apps-data
+          nfs:
+            path: /
+            server: 10.110.111.197
+      containers:
+        - name: voms-rest
+          image: 127.0.0.1:6000/voms-rest:edge
+          volumeMounts:
+            - mountPath: /voms/data
+              name: voms-apps-data
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 180
+            periodSeconds: 3

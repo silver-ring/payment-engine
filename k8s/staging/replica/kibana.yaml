@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-kibana-statefulset
+  labels:
+    app: voms-kibana-statefulset
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd          
+spec:
+  serviceName: "voms-kibana"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-kibana
+  template:    
+    metadata:
+      name: voms-kibana
+      labels:
+        app: voms-kibana
+        customer: kubernetes_topup
+        product: topup
+        owner: mohamed_elbahrawy
+        purpose: rnd              
+    spec:  
+      containers:
+        - image: docker.elastic.co/kibana/kibana-oss:6.6.0
+          name: voms-kibana
+          env:
+            - name: "ELASTICSEARCH_HOSTS"
+              value: "http://35.202.139.83:100/"          
+    

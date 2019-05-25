@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-proxy-deployment
+  labels:
+    app: voms-proxy-deployment
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd    
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-proxy
+  template:    
+    metadata:  
+      name: voms-proxy
+      labels:
+        app: voms-proxy
+        customer: kubernetes_topup
+        product: topup
+        owner: mohamed_elbahrawy
+        purpose: rnd              
+    spec:
+      containers:
+      - name: voms-proxy
+        image: nginx:alpine    
+        volumeMounts:
+            - name: nginx-proxy
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+        command: [nginx, '-g', 'daemon off;']      
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 3                
+      volumes:
+        - name: nginx-proxy
+          configMap:
+            name: nginx-proxy
+

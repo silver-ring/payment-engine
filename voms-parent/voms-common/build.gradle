@@ -1,0 +1,57 @@
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
+apply plugin: "com.ewerk.gradle.plugins.querydsl"
+
+jar {
+    enabled = true
+}
+
+bootJar {
+    enabled = false
+}
+
+querydsl {
+    jpa = true
+    querydslSourcesDir = "${generated_source_folder}"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', "${generated_source_folder}"]
+        }
+    }
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    implementation "org.springframework.boot:spring-boot-starter-aop"
+    implementation "org.springframework.boot:spring-boot-starter-data-elasticsearch"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+
+    implementation "org.springframework.cloud:spring-cloud-starter-stream-kafka"
+
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.bouncycastle:bcprov-jdk15on:${bouncycastle_version}"
+    implementation "org.bouncycastle:bcpg-jdk15on:${bouncycastle_version}"
+    
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jackson_datatype_jsr310_version}"
+
+    implementation "com.querydsl:querydsl-core:${querydsl_version}"
+    implementation "com.querydsl:querydsl-apt:${querydsl_version}"
+    implementation "com.querydsl:querydsl-jpa:${querydsl_version}"
+
+    implementation "mysql:mysql-connector-java:${mysql_connector_java_version}"
+
+    implementation "com.cronutils:cron-utils:${cron_utils_version}"
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+}

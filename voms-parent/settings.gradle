@@ -1,0 +1,28 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://repo.spring.io/snapshot' }
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url('http://artifactory.toronto.redknee.com/artifactory/repo/') }
+        gradlePluginPortal()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'org.springframework.boot') {
+                useModule("org.springframework.boot:spring-boot-gradle-plugin:${requested.version}")
+            }
+        }
+    }
+}
+
+rootProject.name = "voms-parent"
+
+include "voms-test-common"
+include "voms-common"
+include "voms-integration"
+include "voms-rest"
+include "voms-db-init"
+include "voms-security"
+include "voms-batch"
+include "voms-schedule"
+include "voms-soap"
+include "voms-web"

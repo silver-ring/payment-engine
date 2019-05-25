@@ -1,0 +1,112 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.21.0"
+    }
+}
+
+apply plugin: "com.palantir.docker"
+
+def NPM_GROUP = 'npm'
+
+task npmInstall(type: Exec) {
+    group = NPM_GROUP
+    String npm = getNpmCommand()
+    commandLine npm, "install"
+}
+
+task npmStart(type: Exec) {
+    group = NPM_GROUP
+    String npm = getNpmCommand()
+    commandLine npm, "start"
+}
+
+task npmBuild(type: Exec) {
+    group = NPM_GROUP
+    doFirst {
+        String npm = getNpmCommand()
+        if (project.hasProperty('env') && project.env == 'staging') {
+            commandLine npm, "run", "buildStaging"
+        } else {
+            commandLine npm, "run", "buildLocal"
+        }
+    }
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+static def getNpmCommand() {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        return 'npm.cmd'
+    } else {
+        return 'npm'
+    }
+}
+
+// to build the dev profile run  "gradle -penv=staging -ptag=v1 docker"
+// to build the project and push the image use "gradle -penv=staging -ptag=v1 dockerPush"
+// check the documentation for more information "https://github.com/palantir/gradle-docker" 
+docker {
+    dockerfile file("Dockerfile")
+    copySpec.from(file("${buildDir}/web")).into("web")
+    if (project.hasProperty('env') && project.hasProperty('tag') && project.env == 'prod') {
+        String tagName = "${project.tag}"
+        tags "latest", "${tagName}"
+        name "eu.gcr.io/product-topup/topup-cloud-voms-web:${tagName}"
+    } else if (project.hasProperty('env') && project.env == 'staging') {
+        String tagName = "edge-${version}"
+        tags "edge", "${tagName}"
+        name "eu.gcr.io/product-topup/topup-cloud-voms-web:${tagName}"
+    } else if (project.hasProperty('env') && project.env == 'dev') {
+        String tagName = "${version}"
+        tags "${tagName}"
+        name "eu.gcr.io/product-topup/topup-cloud-voms-web:${tagName}"        
+    } else {
+        String tagName = "${System.currentTimeMillis()}"
+        tags "edge", "${tagName}"
+        name "127.0.0.1:6000/voms-web:${tagName}"
+    }
+}
+
+
+// to deploy the app in k8s you should run  "gradle deployk8s" 
+// then you should update the image with "gradle updateK8sImage"
+// if you want to undeploy the app use "gradle undeployK8s"
+// to deploy in develop you should use "-penv=staging -ptag=v1" flage 
+
+def K8S_GROUP = 'k8s'
+
+task deployK8s(type: Exec) {
+    group = K8S_GROUP
+    if (project.hasProperty('env') && project.env == 'staging') {
+        commandLine "Kubectl", "apply", "-f", "k8s-staging.yaml"
+    } else {
+        commandLine "Kubectl", "apply", "-f", "k8s-local.yaml"
+    }
+}
+
+task undeployK8s(type: Exec) {
+    group = K8S_GROUP
+    if (project.hasProperty('env') && project.env == 'staging') {
+        commandLine "Kubectl", "delete", "-f", "k8s-staging.yaml"
+    } else {
+        commandLine "Kubectl", "delete", "-f", "k8s-local.yaml"
+    }
+}
+
+task updateK8sImage(type: Exec) {
+    group = K8S_GROUP
+    dependsOn dockerTagsPush
+    tasks.findByName('dockerTagsPush').mustRunAfter 'npmBuild'
+    String imageName = docker.name
+    try {
+        commandLine "kubectl", "set", "image", "deployment/voms-web-deployment", "voms-web=${imageName}"
+    } catch(Exception ex) {
+        println("unable to deploy voms-web")
+        ex.printStackTrace()
+    }
+}

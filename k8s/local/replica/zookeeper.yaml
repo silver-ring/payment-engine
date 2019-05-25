@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-zookeeper-statefulset
+  labels:
+    app: voms-zookeeper-statefulset
+spec:
+  serviceName: "voms-zookeeper"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-zookeeper
+  volumeClaimTemplates:
+    - metadata:
+        name: voms-zookeeper-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi                      
+  template:    
+    metadata:
+      name: voms-zookeeper
+      labels:
+        app: voms-zookeeper
+    spec:      
+      containers:
+        - image: confluentinc/cp-zookeeper
+          name: voms-zookeeper
+          volumeMounts:
+            - mountPath: /var/lib/zookeeper
+              name: voms-zookeeper-data
+          env:
+            - name: "ZOOKEEPER_CLIENT_PORT"
+              value: "2181"
+            - name: "ZOOKEEPER_TICK_TIME"
+              value: "2000"
+

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-schedule-deployment
+  labels:
+    app: voms-schedule-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-schedule
+  template:
+      metadata:
+        name: voms-schedule
+        labels:
+          app: voms-schedule
+      spec:
+        volumes:
+        - name: voms-apps-data
+          nfs:
+            path: /
+            server: 10.110.111.197
+        containers:
+        - name: voms-schedule
+          image: 127.0.0.1:6000/voms-schedule:edge
+          volumeMounts:
+              - mountPath: /voms/data
+                name: voms-apps-data
+

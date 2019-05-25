@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-elasticsearch-statefulset
+  labels:
+    app: voms-elasticsearch-statefulset
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd          
+spec:
+  serviceName: "voms-elasticsearch"
+  podManagementPolicy: "Parallel"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: voms-elasticsearch
+  volumeClaimTemplates:
+    - metadata:
+        name: voms-elasticsearch-data
+        labels:
+          customer: kubernetes_topup
+          product: topup
+          owner: mohamed_elbahrawy
+          purpose: rnd              
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi                           
+  template:    
+    metadata:
+      name: voms-elasticsearch
+      labels:
+        app: voms-elasticsearch
+        customer: kubernetes_topup
+        product: topup
+        owner: mohamed_elbahrawy
+        purpose: rnd              
+    spec:      
+      initContainers:      
+         - name: fix-the-volume-permission
+           image: busybox
+           command:
+           - sh
+           - -c
+           - chown -R 1000:1000 /usr/share/elasticsearch/data
+           securityContext:
+             privileged: true
+           volumeMounts:
+           - name: voms-elasticsearch-data
+             mountPath: /usr/share/elasticsearch/data      
+         - name: increase-the-vm-max-map-count
+           image: busybox
+           command:
+           - sysctl
+           - -w
+           - vm.max_map_count=262144
+           securityContext:
+             privileged: true      
+         - name: increase-the-ulimit
+           image: busybox
+           command:
+           - sh
+           - -c
+           - ulimit -n 65536
+           securityContext:
+             privileged: true
+      containers:
+        - name: voms-elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.0      
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: voms-elasticsearch-data
+          env:      
+            - name: "cluster.name"
+              value: "voms"            
+            - name: "node.master"
+              value: "false"
+            - name: "node.data"
+              value: "false"              
+            - name: "node.ingest"
+              value: "false"                            
+            - name: "cluster.remote.connect"
+              value: "false"                
+            - name: "discovery.zen.minimum_master_nodes"
+              value: "2"
+            - name: "discovery.zen.ping.unicast.hosts" 
+              value: "elasticsearch-master"
+

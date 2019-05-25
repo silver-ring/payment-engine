@@ -1,0 +1,10 @@
+**/target
+**/*.iml
+**/.idea
+**/.gradle
+**/build
+**/out
+/codealike.json
+**/h2-data/
+/voms-parent/voms-common/src/querydsl/
+/voms-parent/voms-common/src/generated/

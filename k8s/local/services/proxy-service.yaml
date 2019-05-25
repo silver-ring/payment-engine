@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy
+spec:
+    selector:
+      app: voms-proxy
+    type: NodePort  
+    ports:      
+      - name: port31390
+        port: 80        
+        nodePort: 31390        
+      - name: port31410
+        port: 100      
+        nodePort: 31410
+      - name: port31420
+        port: 200        
+        nodePort: 31420        
+      - name: port31430
+        port: 300      
+        nodePort: 31430        
+      - name: port31440
+        port: 400      
+        nodePort: 31440        
+      - name: port31450
+        port: 500      
+        nodePort: 31450        
+      - name: port31600
+        port: 1000     
+        nodePort: 31600        
+      - name: port31700
+        port: 2000     
+        nodePort: 31700

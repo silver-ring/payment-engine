@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-mailhog-statefulset
+  labels:
+    app: voms-mailhog-statefulset
+spec:
+  serviceName: "voms-mailhog"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-mailhog
+  template:    
+    metadata:
+      name: voms-mailhog
+      labels:
+        app: voms-mailhog
+    spec:
+      containers:
+      - name: voms-mailhog
+        image: mailhog/mailhog

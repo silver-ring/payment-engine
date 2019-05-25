@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-zookeeper1-statefulset
+  labels:
+    app: voms-zookeeper1-statefulset
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd          
+spec:
+  serviceName: "voms-zookeeper1"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-zookeeper1
+  volumeClaimTemplates:
+    - metadata:
+        name: voms-zookeeper1-data
+        labels:
+          customer: kubernetes_topup
+          product: topup
+          owner: mohamed_elbahrawy
+          purpose: rnd              
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi                                             
+  template:    
+    metadata:
+      name: voms-zookeeper1
+      labels:
+        app: voms-zookeeper1
+        customer: kubernetes_topup
+        product: topup
+        owner: mohamed_elbahrawy
+        purpose: rnd              
+    spec:
+      containers:
+        - image: confluentinc/cp-zookeeper
+          name: voms-zookeeper1
+          volumeMounts:
+            - mountPath: /var/lib/zookeeper
+              name: voms-zookeeper1-data
+          env:
+            - name: "ZOOKEEPER_SERVER_ID"
+              value: "1"
+            - name: "ZOOKEEPER_CLIENT_PORT"
+              value: "2181"
+            - name: "ZOOKEEPER_TICK_TIME"
+              value: "2000"
+            - name: "ZOOKEEPER_INIT_LIMIT"
+              value: "5"
+            - name: "ZOOKEEPER_SYNC_LIMIT"
+              value: "2"
+            - name: "ZOOKEEPER_SERVERS"
+              value: "zookeeper1:12888:13888;zookeeper2:22888:23888;zookeeper3:32888:33888"  

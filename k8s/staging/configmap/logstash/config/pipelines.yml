@@ -1,0 +1,16 @@
+- pipeline.id: voucher_history
+  path.config: "/voms/pipelines/voucher_history.config"
+- pipeline.id: user_activity
+  path.config: "/voms/pipelines/user_activity.config"
+- pipeline.id: batch_order_history
+  path.config: "/voms/pipelines/batch_order_history.config"
+- pipeline.id: voucher_policy_history
+  path.config: "/voms/pipelines/voucher_policy_history.config"
+- pipeline.id: recharge_history
+  path.config: "/voms/pipelines/recharge_history.config"
+- pipeline.id: remote_file_transfer_history
+  path.config: "/voms/pipelines/remote_file_transfer_history.config"
+- pipeline.id: user_notification_email_history
+  path.config: "/voms/pipelines/user_notification_email_history.config"
+- pipeline.id: user_email_domain_migration_history
+  path.config: "/voms/pipelines/user_email_domain_migration_history.config"

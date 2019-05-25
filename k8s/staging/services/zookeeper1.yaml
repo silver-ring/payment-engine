@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper1
+  labels:
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd        
+spec:
+    selector:
+      app: voms-zookeeper1
+    ports:      
+      - name: port2181
+        port: 2181      
+      - name: port12888
+        port: 12888
+      - name: port13888
+        port: 13888
+    clusterIP: None

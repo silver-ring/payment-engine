@@ -1,0 +1,142 @@
+plugins {
+    id 'org.springframework.boot' version '2.2.0.M1' apply false
+    id "com.github.spotbugs" version "1.6.8" apply false
+    id "io.spring.dependency-management" version "1.0.7.RELEASE" apply false
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10" apply false
+    id "com.intershop.gradle.jaxb" version "2.0.0" apply false
+    id 'org.unbroken-dome.test-sets' version '2.1.1' apply false
+    id "com.palantir.docker" version "0.21.0" apply false
+    id "com.palantir.git-version" version "0.12.0-rc2" 
+}
+
+ext {
+    set('springCloudVersion', 'Greenwich.SR1')
+}
+
+allprojects {
+    group = 'com.optiva.topup'
+    version = versionDetails().lastTag
+}
+
+subprojects {
+
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+        maven { url('http://artifactory.toronto.redknee.com/artifactory/repo/') }
+    }
+
+    if (!name.contains('web')) {
+
+        apply plugin: 'io.spring.dependency-management'
+        apply plugin: "java"
+        apply plugin: "eclipse"
+        apply plugin: "idea"
+        apply plugin: 'jacoco'
+        apply plugin: 'checkstyle'
+        apply plugin: "com.github.spotbugs"
+        apply plugin: 'pmd'
+        apply plugin: 'org.unbroken-dome.test-sets'
+
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+
+        testSets {
+            integrationTest
+        }
+
+        configurations {
+            all*.exclude module: 'spring-boot-starter-logging'
+        }
+
+        dependencies {
+            implementation "org.springframework.boot:spring-boot-starter"
+            implementation "org.springframework.boot:spring-boot-starter-log4j2"
+
+            implementation "org.apache.commons:commons-lang3"
+            implementation "commons-io:commons-io:${commons_io_version}"
+            implementation "org.apache.commons:commons-text:${commons_text_version}"
+            implementation "commons-beanutils:commons-beanutils:${commons_beanutils_version}"
+
+            implementation "com.google.guava:guava:${guava_version}"
+
+            implementation "com.google.code.findbugs:annotations:${google_annotations_version}"
+
+            compileOnly "org.projectlombok:lombok:${lombok_version}"
+            testCompileOnly "org.projectlombok:lombok:${lombok_version}"
+            annotationProcessor "org.projectlombok:lombok:${lombok_version}"
+
+            testImplementation "org.springframework.boot:spring-boot-starter-test"
+            testImplementation "org.springframework.security:spring-security-test"
+            testImplementation "org.springframework.boot:spring-boot-test-autoconfigure"
+
+            testImplementation "org.junit.jupiter:junit-jupiter-api:${junit5_version}"
+            testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit5_version}"
+            testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junit5_version}"
+            testCompileOnly "junit:junit:${junit4_version}"
+
+            testCompile "com.openpojo:openpojo:$openpojo_version"
+            testCompile "pl.pojo:pojo-tester:$pl_pojo_version"
+        }
+
+        dependencyManagement {
+            imports {
+                mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+            }
+        }
+
+        pmd {
+            ignoreFailures = true
+            toolVersion = '6.11.0'
+            ruleSetFiles = rootProject.files('../quality-enforcement/pmd/ruleset.xml')
+            sourceSets = [sourceSets.main, sourceSets.test]
+        }
+
+        pmdMain {
+            source = "src/main/java"
+        }
+
+        checkstyle {
+            toolVersion = '8.17'
+            showViolations = true
+            ignoreFailures = true
+            configFile = rootProject.file('../quality-enforcement/checkstyle/google_checks.xml')
+            sourceSets = [sourceSets.main, sourceSets.test]
+        }
+
+        checkstyleMain {
+            source = "src/main/java"
+        }
+
+        spotbugs {
+            toolVersion = '3.1.11'
+            ignoreFailures = true
+            effort = "max"
+            reportLevel = "low"
+            sourceSets = [sourceSets.main, sourceSets.test]
+        }
+
+        spotbugsMain {
+            source = "src/main/java"
+        }
+
+        jacoco {
+            toolVersion = "0.8.3"
+        }
+
+        tasks.withType(JavaCompile) {
+            options.deprecation = true
+            options.compilerArgs += ['-Werror']
+        }
+
+        tasks.withType(Test) {
+            useJUnitPlatform()
+            failFast = false
+            testLogging {
+                events "passed", "skipped", "failed"
+            }
+        }
+    }
+}

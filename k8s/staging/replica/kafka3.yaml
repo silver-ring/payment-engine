@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-kafka3-statefulset
+  labels:
+    app: voms-kafka3-statefulset
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd          
+spec:
+  serviceName: "voms-kafka3"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-kafka3
+  volumeClaimTemplates:
+    - metadata:
+        name: voms-kafka3-data
+        labels:
+            customer: kubernetes_topup
+            product: topup
+            owner: mohamed_elbahrawy
+            purpose: rnd              
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi                                       
+  template:    
+    metadata:
+      name: voms-kafka3
+      labels:
+        app: voms-kafka3
+        customer: kubernetes_topup
+        product: topup
+        owner: mohamed_elbahrawy
+        purpose: rnd              
+    spec:
+      initContainers:
+        - name: remove-lostfound
+          image: busybox
+          command: ["rm", "-r", "/var/lib/kafka/data/lost+found"]
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/lib/kafka/data
+              name: voms-kafka3-data
+      containers:
+        - image: confluentinc/cp-kafka
+          name: voms-kafka3
+          volumeMounts:
+            - mountPath: /var/lib/kafka/data
+              name: voms-kafka3-data
+          env:
+            - name: "KAFKA_BROKER_ID"
+              value: "3"
+            - name: "KAFKA_ZOOKEEPER_CONNECT"
+              value: "zookeeper1:2181,zookeeper2:2182,zookeeper3:2183"
+            - name: "KAFKA_ADVERTISED_LISTENERS"
+              value: "INNER://kafka3:29093,OUTER://localhost:9093"
+            - name: "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"
+              value: "INNER:PLAINTEXT,OUTER:PLAINTEXT"
+            - name: "KAFKA_INTER_BROKER_LISTENER_NAME"
+              value: "INNER"
+            - name: "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"
+              value: "3"
+            - name: "KAFKA_DEFAULT_REPLICATION_FACTOR"
+              value: "3"              
+            - name: "KAFKA_NUM_PARTITIONS"
+              value: "3"

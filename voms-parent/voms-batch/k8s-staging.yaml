@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-batch-deployment
+  labels:
+    app: voms-batch-deployment
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-batch
+  template:
+    metadata:
+      name: voms-batch
+      labels:
+          app: voms-batch
+          customer: kubernetes_topup
+          product: topup
+          owner: mohamed_elbahrawy
+          purpose: rnd
+    spec:
+      volumes:
+       - name: voms-apps-data
+         nfs:
+           path: /
+           server: 10.59.243.125
+      containers:
+      - name: voms-batch
+        image: eu.gcr.io/product-topup/topup-cloud-voms-batch:edge
+        env:
+          - name: "SPRING_PROFILES_ACTIVE"
+            value: "staging,common,common-staging"
+        volumeMounts:
+            - mountPath: /voms/data
+              name: voms-apps-data
+
+

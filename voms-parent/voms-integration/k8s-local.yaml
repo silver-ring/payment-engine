@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-integration-deployment
+  labels:
+    app: voms-integration-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-integration
+  template:
+    metadata:
+        name: voms-integration
+        labels:
+          app: voms-integration
+    spec:
+      volumes:
+        - name: voms-apps-data
+          nfs:
+            path: /
+            server: 10.110.111.197
+      containers:
+      - name: voms-integration
+        image: 127.0.0.1:6000/voms-integration:edge
+        volumeMounts:
+            - mountPath: /voms/data
+              name: voms-apps-data
+

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: voms-db-mysqld-statefulset
+  labels:
+    app: voms-db-mysqld-statefulset    
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd          
+spec:
+  serviceName: "voms-db-mysqld"
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-db-mysqld
+  volumeClaimTemplates:
+    - metadata:
+        name: voms-db-mysqld-data
+        labels:
+          customer: kubernetes_topup
+          product: topup
+          owner: mohamed_elbahrawy
+          purpose: rnd              
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  template:    
+    metadata:
+      name: voms-db-mysqld
+      labels:
+        app: voms-db-mysqld
+        client: db-server        
+        customer: kubernetes_topup
+        product: topup
+        owner: mohamed_elbahrawy
+        purpose: rnd              
+    spec:
+      initContainers:
+        - name: remove-lostfound
+          image: busybox
+          command: ["rm", "-r", "/var/lib/mysql/lost+found"]
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: voms-db-mysqld-data    
+      containers:
+        - name: voms-db-mysqld
+          image: mysql/mysql-cluster
+          volumeMounts:          
+            - mountPath: /var/lib/mysql
+              name: voms-db-mysqld-data
+            - name: mysql-config
+              mountPath: /etc/my.cnf
+              subPath: my.cnf
+          args: ["mysqld","--default-authentication-plugin=mysql_native_password","--ndb-nodeid=11"]
+          env:
+              - name: "MYSQL_ROOT_PASSWORD"
+                value: "root"
+              - name: "MYSQL_ROOT_HOST"
+                value: "%"                      
+      volumes:
+        - name: mysql-config
+          configMap:
+            name: mysql-config

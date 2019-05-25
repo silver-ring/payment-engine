@@ -1,0 +1,33 @@
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
+
+jar {
+    enabled = true
+}
+
+bootJar {
+    enabled = false
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${spring_security_oauth2_autoconfigure_version}"
+
+    implementation "org.springframework.cloud:spring-cloud-starter-stream-kafka"
+
+    implementation "org.springframework.boot:spring-boot-starter-test"
+    implementation "org.springframework.security:spring-security-test"
+    implementation "org.springframework.kafka:spring-kafka-test"
+    implementation "org.springframework.boot:spring-boot-test-autoconfigure"
+
+    implementation "com.h2database:h2"
+
+    implementation "com.google.code.gson:gson:${gson_version}"
+
+    implementation "org.junit.jupiter:junit-jupiter-api:${junit5_version}"
+    runtimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit5_version}"
+    runtimeOnly "org.junit.vintage:junit-vintage-engine:${junit5_version}"
+    compileOnly "junit:junit:${junit4_version}"
+}

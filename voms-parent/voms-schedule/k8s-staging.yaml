@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voms-schedule-deployment
+  labels:
+    app: voms-schedule-deployment
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voms-schedule
+  template:
+    metadata:
+        name: voms-schedule
+        labels:
+          app: voms-schedule
+          customer: kubernetes_topup
+          product: topup
+          owner: mohamed_elbahrawy
+          purpose: rnd
+    spec:
+        volumes:
+        - name: voms-apps-data
+          nfs:
+            path: /
+            server: 10.59.243.125
+        containers:
+        - name: voms-schedule
+          image: eu.gcr.io/product-topup/topup-cloud-voms-schedule:edge
+          env:
+            - name: "SPRING_PROFILES_ACTIVE"
+              value: "staging,common,common-staging"
+          volumeMounts:
+              - mountPath: /voms/data
+                name: voms-apps-data
+

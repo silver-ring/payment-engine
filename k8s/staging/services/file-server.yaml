@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: file-server
+  labels:
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd        
+spec:
+  selector:
+    app: voms-file-server
+  ports:  
+    - name: port2049
+      port: 2049
+    - name: port20048
+      port: 20048
+    - name: port111
+      port: 111      
+  clusterIP: 10.59.243.125
+

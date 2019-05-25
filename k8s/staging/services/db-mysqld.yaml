@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-mysqld
+  labels:
+    customer: kubernetes_topup
+    product: topup
+    owner: mohamed_elbahrawy
+    purpose: rnd      
+spec:
+    selector:
+      app: voms-db-mysqld
+    ports:
+      - name: port3306
+        port: 3306
+      - name: port1186
+        port: 1186
+    clusterIP: None
